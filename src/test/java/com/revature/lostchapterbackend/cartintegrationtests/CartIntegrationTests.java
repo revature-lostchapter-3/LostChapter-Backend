@@ -155,7 +155,9 @@ public class CartIntegrationTests {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute("currentUser", this.expectedUser);
 		
-		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/users/1/cart").param("bookId", "1").param("quantityToBuy", "1").session(session);
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/users/1/cart")
+				.param("bookId", "1")
+				.param("quantityToBuy", "1").session(session);
 		Carts expectedCart = new Carts();
 
 		expectedCart.setUser(this.expectedUser);

@@ -38,7 +38,10 @@ import com.revature.lostchapterbackend.model.Users;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -66,17 +69,7 @@ public class CartIntegrationTestsJWT {
 
 	private Users expectedUser;
 
-	private SignUpDto testDto = new SignUpDto(
-			"test",
-			"password",
-			"testFirstName",
-			"testLastName",
-			21,
-			"test@aol.com",
-			"09/08/1990",
-			"addresswest",
-			"Customer");
-
+	private SignUpDto testDto;
 
 	private BookToBuy positiveBookToBuy;
 	private BookToBuy negativeBookToBuy;
@@ -85,7 +78,6 @@ public class CartIntegrationTestsJWT {
 
 	@BeforeEach
 	public void setup() {
-
 
 		Book positiveBook = new Book();    //Id should be 1
 		Book noStockBook = new Book();    //Id should be 2
@@ -118,13 +110,24 @@ public class CartIntegrationTestsJWT {
 		bookDao.save(noStockBook);
 
 
-		SignUpDto signUpDto = new SignUpDto("test123", "password",
+		testDto = new SignUpDto("test123", "password",
 				"testfn", "testln", 21, "test123@gmail.com",
-				"1990-12-09", "address123", "Customer");
+				"09/12/1990", "address123", "Customer");
+
+		expectedUser = new Users(
+				"test",
+				"password",
+				"testFirstName",
+				"testLastName",
+				21,
+				"test@aol.com",
+				"09/08/1990",
+				"addresswest",
+				"Customer");
 
 		String signUpJson = "";
 		try {
-			signUpJson = mapper.writeValueAsString(signUpDto);
+			signUpJson = mapper.writeValueAsString(testDto);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
@@ -134,6 +137,7 @@ public class CartIntegrationTestsJWT {
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(signUpJson))
 					.andReturn().getResponse().getContentAsString();
+			System.out.println("mvc: " + response);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -153,127 +157,140 @@ public class CartIntegrationTestsJWT {
 		this.negativeBookToBuy.setId(2);
 		this.negativeBookToBuy.setQuantityToBuy(1);
 
-
-
 	}
 
 	@Test
 	public void cart_test_adding_item_to_cart_positive() throws Exception {
+		positiveBookToBuy.setId(1);
+		String expectedJson = mapper.writeValueAsString(positiveBookToBuy);
+		System.out.println("Expected Json: " + expectedJson);
+		System.out.println(testToken);
+
+		Carts expectedCart = new Carts(this.expectedUser,);
+		expectedCart.setUser(this.expectedUser);
+		expectedCart.setCartId(1);
+		System.out.println(expectedCart.toString());
+
+		mvc.perform(post("/users/1/cart")
+						.param("bookId", "1")
+						.param("quantityToBuy", "1"))
+				.andExpect(status().is(200))
+				.andExpect(content().json(expectedJson));
 
 	}
-
-	@Test
-	public void cart_test_removing_item_from_cart_positive() throws Exception {
-
-
-
-	}
-
-
-	@Test
-	public void cart_test_attempting_to_add_to_cart_item_out_of_stock_negative() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_adding_item_to_cart_when_item_already_in_cart_positive() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_adding_item_of_multiple_quantity_positive() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_adding_item_of_negative_quantity_negative() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_get_cart_by_id_positive() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_get_cart_no_matching_id_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_book_in_cart_positive() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_book_not_in_cart_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_all_items_in_cart_positive() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_add_book_to_cart_user_id_doesnt_match_pattern_negative() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_add_book_to_cart_bookId_doesnt_match_pattern_negative() throws Exception {
-}
-
-	@Test
-	public void cart_test_add_book_to_cart_quantityToBuy_doesnt_match_pattern_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_trying_to_add_book_that_doesnt_exist_negative() throws Exception {
-
-	}
-
-
-	@Test
-	public void cart_test_trying_to_access_cart_that_doesnt_exist_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_trying_to_get_cart_cart_id_not_int_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_item_in_cart_cartId_doesnt_match_pattern_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_item_in_cart_bookId_doesnt_match_pattern_negative() throws Exception {
-
-
-	}
-
-	@Test
-	public void cart_test_delete_item_in_cart_bookId_doesnt_exist_negative() throws Exception {
-
-	}
-
-	@Test
-	public void cart_test_delete_item_in_cart_cartId_doesnt_exist_negative() throws Exception {
-
-
-	}
+//
+//	@Test
+//	public void cart_test_removing_item_from_cart_positive() throws Exception {
+//
+//
+//
+//	}
+//
+//
+//	@Test
+//	public void cart_test_attempting_to_add_to_cart_item_out_of_stock_negative() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_adding_item_to_cart_when_item_already_in_cart_positive() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_adding_item_of_multiple_quantity_positive() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_adding_item_of_negative_quantity_negative() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_get_cart_by_id_positive() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_get_cart_no_matching_id_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_book_in_cart_positive() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_book_not_in_cart_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_all_items_in_cart_positive() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_add_book_to_cart_user_id_doesnt_match_pattern_negative() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_add_book_to_cart_bookId_doesnt_match_pattern_negative() throws Exception {
+//}
+//
+//	@Test
+//	public void cart_test_add_book_to_cart_quantityToBuy_doesnt_match_pattern_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_trying_to_add_book_that_doesnt_exist_negative() throws Exception {
+//
+//	}
+//
+//
+//	@Test
+//	public void cart_test_trying_to_access_cart_that_doesnt_exist_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_trying_to_get_cart_cart_id_not_int_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_item_in_cart_cartId_doesnt_match_pattern_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_item_in_cart_bookId_doesnt_match_pattern_negative() throws Exception {
+//
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_item_in_cart_bookId_doesnt_exist_negative() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void cart_test_delete_item_in_cart_cartId_doesnt_exist_negative() throws Exception {
+//
+//
+//	}
 
 }
