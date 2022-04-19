@@ -24,6 +24,10 @@ public class BookToBuy {
 		super();
 	}
 
+	public BookToBuy(Book books) {
+		this.books = books;
+	}
+
 	public BookToBuy(Book books, int quantityToBuy) {
 		super();
 		this.books = books;
