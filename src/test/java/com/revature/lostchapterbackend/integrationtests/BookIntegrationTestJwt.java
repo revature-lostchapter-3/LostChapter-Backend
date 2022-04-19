@@ -149,8 +149,8 @@ public class BookIntegrationTestJwt {
             System.out.println(mvc.perform(post("/books")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(jsonToSend)
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken))
-                    .andExpect(status().is(200))
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer" + testToken))
+                    .andExpect(status().is(201))
                     .andExpect(content().json(expectedJson))
                     .andReturn().getResponse().getContentAsString());
         }
