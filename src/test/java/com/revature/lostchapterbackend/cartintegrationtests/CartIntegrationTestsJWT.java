@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
@@ -74,10 +75,11 @@ public class CartIntegrationTestsJWT {
 	private BookToBuy positiveBookToBuy;
 	private BookToBuy negativeBookToBuy;
 
-
+	public ArrayList<BookToBuy> b2b;
 
 	@BeforeEach
 	public void setup() {
+		this.b2b = new ArrayList<>();
 
 		Book positiveBook = new Book();    //Id should be 1
 		Book noStockBook = new Book();    //Id should be 2
@@ -108,6 +110,7 @@ public class CartIntegrationTestsJWT {
 
 		bookDao.save(positiveBook);
 		bookDao.save(noStockBook);
+
 
 
 		testDto = new SignUpDto("test123", "password",
@@ -157,6 +160,9 @@ public class CartIntegrationTestsJWT {
 		this.negativeBookToBuy.setId(2);
 		this.negativeBookToBuy.setQuantityToBuy(1);
 
+		this.b2b.add(positiveBookToBuy);
+		//this.b2b.add(negativeBookToBuy);
+
 	}
 
 	@Test
@@ -164,18 +170,23 @@ public class CartIntegrationTestsJWT {
 		positiveBookToBuy.setId(1);
 		String expectedJson = mapper.writeValueAsString(positiveBookToBuy);
 		System.out.println("Expected Json: " + expectedJson);
-		System.out.println(testToken);
+		System.out.println("testToken: " + testToken);
 
-		Carts expectedCart = new Carts(this.expectedUser,);
+		Carts expectedCart = new Carts();
 		expectedCart.setUser(this.expectedUser);
 		expectedCart.setCartId(1);
+		expectedCart.setBooksToBuy(b2b);
+
 		System.out.println(expectedCart.toString());
 
 		mvc.perform(post("/users/1/cart")
+//						.contentType(MediaType.APPLICATION_JSON)
+//						.content(jsonToSend)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
+						.param("userId", "1")
 						.param("bookId", "1")
 						.param("quantityToBuy", "1"))
-				.andExpect(status().is(200))
-				.andExpect(content().json(expectedJson));
+				.andExpect(content().json(expectedJson)).andExpect(status().is(200));
 
 	}
 //
