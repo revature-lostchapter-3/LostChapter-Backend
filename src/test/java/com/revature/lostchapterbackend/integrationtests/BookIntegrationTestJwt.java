@@ -18,6 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -153,6 +156,130 @@ public class BookIntegrationTestJwt {
                     .andExpect(status().is(201))
                     .andExpect(content().json(expectedJson))
                     .andReturn().getResponse().getContentAsString());
+        }
+    }
+    @Nested
+    @DisplayName("Book Name is Empty")
+    class CheckEmptyBookName {
+        @Test
+                public void TestEmptyBookNamePositive() throws Exception {
+            AddOrUpdateBookDTO actualBook = new AddOrUpdateBookDTO("2425262728", "", "synopsis",
+                    "author", 1, 1, 1996, "edition",
+                    "publisher", true,
+                    0.99, 10.99, "image");
+            String jsonToSend = mapper.writeValueAsString(actualBook);
+
+            System.out.println(mvc.perform(post("/books")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonToSend)
+                    .header(HttpHeaders.AUTHORIZATION,"Bearer" + testToken))
+                    .andExpect(status().is(400))
+                    .andExpect(MockMvcResultMatchers.content().string("Book name cannot be blank.")));
+        }
+    }
+    @Nested
+    @DisplayName("Book synopsis is Empty")
+    class CheckEmptySynopsis {
+        @Test
+            public void TestEmptySynopsisEmpty() throws Exception{
+            AddOrUpdateBookDTO actualBook = new AddOrUpdateBookDTO("2425262728", "bookName5", "",
+                    "author", 1, 1, 1996, "edition",
+                    "publisher", true,
+                    0.99, 10.99, "image");
+            String jsonToSend = mapper.writeValueAsString(actualBook);
+            System.out.println(mvc.perform(post("/books")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonToSend)
+                            .header(HttpHeaders.AUTHORIZATION,"Bearer" + testToken))
+                            .andExpect(status().is(400))
+                            .andExpect(MockMvcResultMatchers.content().string("Synopsis cannot be blank.")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Genre doesn't exist")
+    class CheckGenreNotFound {
+        @Test
+            public  void TestGenreWasNotFound() throws Exception {
+
+            AddOrUpdateBookDTO bookToAdd = new AddOrUpdateBookDTO("12345", "bookname5",
+                    "synopsis", "author", 12345, 5, 1996, "edition",
+                    "publisher", true, 0.5, 10.99, "image");
+
+            String jsonToSend = mapper.writeValueAsString(bookToAdd);
+
+            System.out.println(mvc.perform(post("/books")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonToSend)
+                            .header(HttpHeaders.AUTHORIZATION,"Bearer" + testToken))
+                    .andExpect(status().is(400))
+                    .andExpect(MockMvcResultMatchers.content().string("Genre doesn't exist")));
+
+
+        }
+    }
+
+    @Nested
+    @DisplayName("Succesfully updated the book")
+    class SuccessfullyUpdatedTheBook {
+        @Test
+            public void SuccesfullUpdatedTheBook() throws Exception{
+            AddOrUpdateBookDTO bookToSend = new AddOrUpdateBookDTO("000001", "bookName", "synopsis",
+                    "author", 1, 5, 1996, "edition",
+                    "publisher", true,
+                    0.5, 10.99, "image");
+            String jsonToSend = mapper.writeValueAsString(bookToSend);
+            Book actualBook = new Book("000001", "bookName", "synopsis",
+                    "author", fiction, 5, 1996, "edition",
+                    "publisher", true,
+                    0.5, 10.99, "image");
+            actualBook.setBookId(1);
+            String expectedJson = mapper.writeValueAsString(actualBook);
+            System.out.println(mvc.perform(put("/books/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonToSend)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer" + testToken))
+                    .andExpect(status().is(200))
+                    .andExpect(content().json(expectedJson))
+                    .andReturn().getResponse().getContentAsString());
+
+        }
+    }
+
+    @Nested
+    @DisplayName("Unable to update the book")
+        class BookUpdateWasUnsuccessful {
+        @Test
+            public void BookUpdateWasUncessful() throws Exception {
+            AddOrUpdateBookDTO actualBook = new AddOrUpdateBookDTO("000001", "bookName", "synopsis",
+                    "author", 1, 5, 1996, "edition",
+                    "publisher", true,
+                    0.5, 10.99, "image");
+            String jsonToSend = mapper.writeValueAsString(actualBook);
+
+            System.out.println(mvc.perform(put("/books/7")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonToSend)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer" + testToken))
+                            .andExpect(MockMvcResultMatchers.status().is(400))
+                            .andExpect(MockMvcResultMatchers.content().string("Book doesn't exist")));
+        }
+        }
+
+    @Nested
+    @DisplayName("Invalid Book Id")
+    class InvalidBookId {
+        @Test
+        public void InvalidBookId() throws Exception {
+
+            String jsonToSend = mapper.writeValueAsString(testBook1);
+
+            System.out.println(mvc.perform(get("/books/-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonToSend)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer" + testToken))
+                    .andExpect(MockMvcResultMatchers.status().is(400))
+                    .andExpect(MockMvcResultMatchers.content().string("Book doesn't exist")));
         }
     }
 }

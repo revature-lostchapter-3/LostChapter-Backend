@@ -453,7 +453,8 @@ public class BookIntegrationTest {
 	public void book_controller_test_get_book_by_id_bookNotFoundException_negative() throws Exception {
 		
 		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/books/-1");
-		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(400)).andExpect(MockMvcResultMatchers.content().string("Book doesn't exist"));
+		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(400))
+				.andExpect(MockMvcResultMatchers.content().string("Book doesn't exist"));
 		
 	}
 	
@@ -464,7 +465,7 @@ public class BookIntegrationTest {
 		
 		String jsonToSend = mapper.writeValueAsString(bookToAdd);
 		
-		MockHttpSession session = new MockHttpSession(); 
+		MockHttpSession session = new MockHttpSession();
 		
 		session.setAttribute("currentUser", admin);
 		
@@ -517,9 +518,11 @@ public class BookIntegrationTest {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute("currentUser", admin);
 		
-		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.put("/books/1").session(session).content(jsonToSend).contentType(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.put("/books/1").session(session)
+				.content(jsonToSend).contentType(MediaType.APPLICATION_JSON);
 		
-		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(200)).andExpect(MockMvcResultMatchers.content().json(expectedJson));
+		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(200))
+				.andExpect(MockMvcResultMatchers.content().json(expectedJson));
 		
 	}
 	

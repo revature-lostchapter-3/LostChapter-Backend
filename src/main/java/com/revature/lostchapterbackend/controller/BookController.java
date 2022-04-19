@@ -109,7 +109,7 @@ public class BookController {
 		}
 	}
 
-	@Admin
+	//@Admin
 	@PutMapping(path = "/books/{id}")
 	public ResponseEntity<Object> updateBookById(@PathVariable(value = "id") String id,
 			@RequestBody AddOrUpdateBookDTO dto) throws InvalidParameterException, GenreNotFoundException,
