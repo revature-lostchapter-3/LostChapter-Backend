@@ -72,7 +72,7 @@ public class CartIntegrationTestsJWT {
 
 	private Users expectedUser;
 
-	private SignUpDto signUpUserDto;
+	private SignUpDto testDto;
 
 	private BookToBuy positiveBookToBuy;
 	private BookToBuy negativeBookToBuy;
@@ -80,10 +80,11 @@ public class CartIntegrationTestsJWT {
 	public ArrayList<BookToBuy> b2b;
 
 	@BeforeEach
-	public void setup() throws Exception {
-		//creating an empty arraylist to hold the books
+	public void setup() {
 		this.b2b = new ArrayList<>();
 
+		Book positiveBook = new Book();    //Id should be 1
+		Book noStockBook = new Book();    //Id should be 2
 
 
 		//creating your mvc
@@ -100,6 +101,8 @@ public class CartIntegrationTestsJWT {
 		//creating a nonfiction genre with db save
 		nonfiction = new Genre();
 		nonfiction.setGenre("nonfiction");
+
+		genreDao.save(fiction);
 		genreDao.save(nonfiction);
 
 
@@ -110,19 +113,21 @@ public class CartIntegrationTestsJWT {
 				"author", fiction, 1, 1996, "edition",
 				"publisher", true,
 				0.99, 10.99, "");
-		bookDao.save(positiveBook);
+
 		noStockBook = new Book("2122232425", "bookName2", "synopsis",
 				"author", fiction, 0, 1996, "edition",
 				"publisher", true,
 				0.99, 10.99, "");
+
+		bookDao.save(positiveBook);
 		bookDao.save(noStockBook);
 
-		//signup user
-		signUpUserDto = new SignUpDto("test123", "password",
+
+
+		testDto = new SignUpDto("test123", "password",
 				"testfn", "testln", 21, "test123@gmail.com",
 				"09/12/1990", "address123", "Customer");
 
-		//create dublicate user
 		expectedUser = new Users(
 				"test123", "password",
 				"testfn", "testln", 21, "test123@gmail.com",
@@ -176,6 +181,7 @@ public class CartIntegrationTestsJWT {
 		expectedCart.setUser(this.expectedUser);
 		expectedCart.setCartId(1);
 		expectedCart.setBooksToBuy(b2b);
+
 		System.out.println(expectedCart.toString());
 		String jsonToSend = mapper.writeValueAsString(expectedCart);
 
