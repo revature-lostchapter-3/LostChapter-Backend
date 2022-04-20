@@ -170,7 +170,9 @@ public class CartIntegrationTests {
 		
 		String expectedJson = mapper.writeValueAsString(expectedCart);
 		
-		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(200)).andExpect(MockMvcResultMatchers.content().json(expectedJson));
+		this.mvc.perform(builder)
+				.andExpect(MockMvcResultMatchers.status().is(200))
+				.andExpect(MockMvcResultMatchers.content().json(expectedJson));
 
 		
 		

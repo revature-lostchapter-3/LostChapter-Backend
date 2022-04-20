@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.servlet.Filter;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.revature.lostchapterbackend.dao.BookDAO;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.web.servlet.MockMvc;
@@ -78,26 +80,33 @@ public class CartIntegrationTestsJWT {
 	public ArrayList<BookToBuy> b2b;
 
 	@BeforeEach
-	public void setup() {
+	public void setup() throws Exception {
 		this.b2b = new ArrayList<>();
 
 		Book positiveBook = new Book();    //Id should be 1
 		Book noStockBook = new Book();    //Id should be 2
 
+
+		//creating your mvc
 		mvc = MockMvcBuilders
 				.webAppContextSetup(webAppContext)
 				.addFilters(springSecurityFilterChain)
 				.build();
 
+		//creating a new fiction genre with db save
 		fiction = new Genre();
 		fiction.setGenre("fiction");
+		genreDao.save(fiction);
 
+		//creating a nonfiction genre with db save
 		nonfiction = new Genre();
 		nonfiction.setGenre("nonfiction");
 
 		genreDao.save(fiction);
 		genreDao.save(nonfiction);
 
+
+		//creating two  books, an instock and out of stock with save to db
 		positiveBook = new Book("1234567879", "bookName", "synopsis",
 				"author", fiction, 1, 1996, "edition",
 				"publisher", true,
@@ -118,32 +127,20 @@ public class CartIntegrationTestsJWT {
 				"09/12/1990", "address123", "Customer");
 
 		expectedUser = new Users(
-				"test",
-				"password",
-				"testFirstName",
-				"testLastName",
-				21,
-				"test@aol.com",
-				"09/08/1990",
-				"addresswest",
-				"Customer");
+				"test123", "password",
+				"testfn", "testln", 21, "test123@gmail.com",
+				"09/12/1990", "address123", "Customer");
+		expectedUser.setId(1);
 
-		String signUpJson = "";
-		try {
-			signUpJson = mapper.writeValueAsString(testDto);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		String response = null;
-		try {
-			response = mvc.perform(post("/signup")
+		//map Signup user to signup jason
+		String signUpJson = mapper.writeValueAsString(testDto);
+
+		String response = mvc.perform(post("/signup")
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(signUpJson))
+							.content(signUpJson)
+							.param("userID","1"))
 					.andReturn().getResponse().getContentAsString();
-			System.out.println("mvc: " + response);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		System.out.println("mvc: " + response);
 
 		if (!response.equals("Email already exist.")) {
 			testToken = response.substring(14, response.length() - 2);
@@ -160,34 +157,47 @@ public class CartIntegrationTestsJWT {
 		this.negativeBookToBuy.setId(2);
 		this.negativeBookToBuy.setQuantityToBuy(1);
 
-		this.b2b.add(positiveBookToBuy);
-		//this.b2b.add(negativeBookToBuy);
+
 
 	}
 
 	@Test
+	@WithMockUser(username = "test", password = "password", roles = "USER")
 	public void cart_test_adding_item_to_cart_positive() throws Exception {
-		positiveBookToBuy.setId(1);
-		String expectedJson = mapper.writeValueAsString(positiveBookToBuy);
-		System.out.println("Expected Json: " + expectedJson);
+		this.b2b.add(this.positiveBookToBuy);
+		//this.b2b.add(negativeBookToBuy);
+
+		//bookJason is for debugging purposes
+		String bookJson = mapper.writeValueAsString(this.positiveBookToBuy);
+
+		System.out.println("Book Json: " + bookJson);
 		System.out.println("testToken: " + testToken);
 
+
 		Carts expectedCart = new Carts();
+		//jason to send contains password and one book
 		expectedCart.setUser(this.expectedUser);
 		expectedCart.setCartId(1);
 		expectedCart.setBooksToBuy(b2b);
 
 		System.out.println(expectedCart.toString());
+		String jsonToSend = mapper.writeValueAsString(expectedCart);
 
-		mvc.perform(post("/users/1/cart")
-//						.contentType(MediaType.APPLICATION_JSON)
-//						.content(jsonToSend)
+		//jsonToExpect is without password.  Makes no sense to return it
+		//from controller, even if encrypted.
+		expectedCart.getUser().setPassword("");
+		String jsonToExpect = mapper.writeValueAsString(expectedCart);
+		System.out.println("json to send: " + jsonToSend);
+		System.out.println("MVC: "	+ mvc.perform(post("/users/1/cart")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(jsonToSend)
 						.header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
 						.param("userId", "1")
 						.param("bookId", "1")
 						.param("quantityToBuy", "1"))
-				.andExpect(content().json(expectedJson)).andExpect(status().is(200));
-
+				.andExpect(content().json(jsonToExpect))
+				.andExpect(status().is(200))
+				.andReturn().getResponse().getContentAsString());
 	}
 //
 //	@Test
@@ -198,11 +208,11 @@ public class CartIntegrationTestsJWT {
 //	}
 //
 //
-//	@Test
-//	public void cart_test_attempting_to_add_to_cart_item_out_of_stock_negative() throws Exception {
-//
-//	}
-//
+	@Test
+	public void cart_test_attempting_to_add_to_cart_item_out_of_stock_negative() throws Exception {
+
+	}
+
 //	@Test
 //	public void cart_test_adding_item_to_cart_when_item_already_in_cart_positive() throws Exception {
 //
