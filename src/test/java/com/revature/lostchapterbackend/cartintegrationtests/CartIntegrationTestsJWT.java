@@ -209,10 +209,18 @@ public class CartIntegrationTestsJWT {
 //
 //
 	@Test
+	@WithMockUser(username = "test", password = "password", roles = "USER")
 	public void cart_test_attempting_to_add_to_cart_item_out_of_stock_negative() throws Exception {
+		String expectedJson = mapper.writeValueAsString(positiveBookToBuy);
 
+		mvc.perform(post("/users/1/cart")
+						.header(HttpHeaders.AUTHORIZATION, "currentUser " + testToken)
+						.param("bookId", "2")
+						.param("quantityToBuy", "1"))
+				.andExpect(content().string("Currently Out of Stock..."))
+				.andExpect(status().is(400));
 	}
-
+//
 //	@Test
 //	public void cart_test_adding_item_to_cart_when_item_already_in_cart_positive() throws Exception {
 //

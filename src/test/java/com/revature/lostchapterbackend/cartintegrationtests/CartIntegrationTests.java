@@ -193,7 +193,7 @@ public class CartIntegrationTests {
 		expectedCart.setCartId(1);
 		ArrayList<BookToBuy> bookToBuyList = new ArrayList<>();
 		expectedCart.setBooksToBuy(bookToBuyList);
-		
+
 		builder = MockMvcRequestBuilders.delete("/users/1/cart").param("bookId", "1").session(session);
 		
 		String expectedJson = mapper.writeValueAsString(expectedCart);
@@ -211,9 +211,15 @@ public class CartIntegrationTests {
 		
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute("currentUser", this.expectedUser);
-		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/users/1/cart").param("bookId", "2").param("quantityToBuy", "1").session(session);
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/users/1/cart")
+				.param("bookId", "2")
+				.param("quantityToBuy", "1").session(session);
 		
-		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(400)).andExpect(MockMvcResultMatchers.content().string("Currently Out of Stock..."));
+		this.mvc.perform(builder)
+				.andExpect(MockMvcResultMatchers.status()
+						.is(400))
+				.andExpect(MockMvcResultMatchers.content()
+						.string("Currently Out of Stock..."));
 		
 		
 	}
@@ -264,7 +270,11 @@ public class CartIntegrationTests {
 		
 		String expectedJson = mapper.writeValueAsString(expectedCart);
 		
-		this.mvc.perform(builder).andExpect(MockMvcResultMatchers.status().is(200)).andExpect(MockMvcResultMatchers.content().json(expectedJson));
+		this.mvc.perform(builder)
+				.andExpect(MockMvcResultMatchers.status()
+						.is(200))
+				.andExpect(MockMvcResultMatchers.content()
+						.json(expectedJson));
 		
 	}
 	
