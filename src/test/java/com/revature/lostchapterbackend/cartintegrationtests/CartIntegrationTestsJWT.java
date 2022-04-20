@@ -80,7 +80,7 @@ public class CartIntegrationTestsJWT {
 	public ArrayList<BookToBuy> b2b;
 
 	@BeforeEach
-	public void setup() {
+	public void setup() throws Exception {
 		this.b2b = new ArrayList<>();
 
 		Book positiveBook = new Book();    //Id should be 1
@@ -107,8 +107,6 @@ public class CartIntegrationTestsJWT {
 
 
 		//creating two  books, an instock and out of stock with save to db
-		Book positiveBook = new Book();    //Id should be 1
-		Book noStockBook = new Book();    //Id should be 2
 		positiveBook = new Book("1234567879", "bookName", "synopsis",
 				"author", fiction, 1, 1996, "edition",
 				"publisher", true,
@@ -135,7 +133,7 @@ public class CartIntegrationTestsJWT {
 		expectedUser.setId(1);
 
 		//map Signup user to signup jason
-		String signUpJson = mapper.writeValueAsString(signUpUserDto);
+		String signUpJson = mapper.writeValueAsString(testDto);
 
 		String response = mvc.perform(post("/signup")
 							.contentType(MediaType.APPLICATION_JSON)
