@@ -31,7 +31,7 @@ public class CartsController {
 
 	private final String PATTERN = "[0-9]+"; // checks String if it only contains numbers
 	
-	@Customer
+	//@Customer
 	@PostMapping(path = "/users/{userId}/cart") // Because a User is connected to a Cart, we can then find the cart Id
 												// // by using the User.
 	public ResponseEntity<Object> addBookToCart(@PathVariable("userId") String userId,
@@ -52,7 +52,7 @@ public class CartsController {
 		} 
 	}
 
-	@Customer
+	//@Customer
 	@GetMapping(path = "/users/{userId}/cart") // endpoint used for displaying all Books in the Cart
 	public ResponseEntity<Object> getCartById(@PathVariable("userId") String userId) {
 		// Aspect or another class for protecting endpoint
@@ -68,7 +68,7 @@ public class CartsController {
 		}
 	}
 
-	@Customer
+	//@Customer
 	@DeleteMapping(path = "/users/{userId}/cart")
 	public ResponseEntity<Object> delteteProductInCart(@PathVariable("userId") String cartId,
 			@RequestParam(name = "bookId", required = false) String bookId) throws BookNotFoundException, NoResultException {
