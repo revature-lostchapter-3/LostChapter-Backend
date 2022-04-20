@@ -41,6 +41,7 @@ public class CartsController {
 			Carts currentCart = null;
 			if (userId.matches(PATTERN) && bookId.matches(PATTERN) && quantityToBuy.matches(PATTERN)) {
 				currentCart = cs.addBooksToCart(currentCart, userId, bookId, quantityToBuy);
+				currentCart.getUser().setPassword("");
 				return ResponseEntity.status(200).body(currentCart);
 			} else {
 				throw new NumberFormatException("product id or quantity must be of type int!");
