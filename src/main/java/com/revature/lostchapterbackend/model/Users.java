@@ -10,7 +10,7 @@ import javax.persistence.Id;
 
 @Entity
 public class Users {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -24,6 +24,7 @@ public class Users {
 	
 	@Column(unique=true)
 	private String email;
+	@Column(unique=true)
 	private String birthday;
 	private String address;
 	private String role;
